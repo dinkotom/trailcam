@@ -1,18 +1,26 @@
 import sys
 import os
+import logging
 
-# Add project root to path
+# Ensure project root is in path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src import processor, config
+from src import processor, logger
 
 def main():
-    # Ensure dirs exist
-    os.makedirs(config.Config.TEMP_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(config.Config.DB_PATH), exist_ok=True)
+    logger.setup_logging()
+    log = logging.getLogger("main")
     
-    # Run
-    processor.process_emails()
+    # Ensure data dirs exist
+    os.makedirs('data/photos', exist_ok=True)
+    
+    log.info("Starting processing...")
+    try:
+        processor.process_emails()
+    except Exception as e:
+        log.critical(f"Unhandled exception: {e}", exc_info=True)
+        
+    log.info("Done.")
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,9 @@
 import imaplib
 import email
+import logging
 from email.header import decode_header
 import datetime
-from .config import Config
+from src.config import Config
 
 def connect_imap():
     """Connects to IMAP server."""
@@ -16,6 +17,7 @@ def fetch_recent_emails(mail, days=1):
     Returns a list of (uid, message_object) tuples.
     """
     mail.select("inbox")
+    log = logging.getLogger("email_ops")
     
     # Calculate date for SINCE search (IMAP requires English months like 17-Dec-2025)
     past_date = datetime.datetime.now() - datetime.timedelta(days=days)
@@ -24,17 +26,21 @@ def fetch_recent_emails(mail, days=1):
     
     # Search command
     search_crit = f'(SINCE {date_since})'
-    print(f"DEBUG: IMAP Search Criteria: {search_crit}")
+    log.debug(f"IMAP Search Criteria: {search_crit}")
     
     status, messages = mail.search(None, search_crit)
-    print(f"DEBUG: IMAP Search Status: {status}, Messages: {messages}")
+    log.debug(f"IMAP Search Status: {status}, Messages: {messages}")
     
     if status != "OK":
-        print("No messages found or search error.")
+        log.warning("No messages found or search error.")
         return []
 
+    if not messages[0]:
+        log.info("No emails found in search window.")
+        return []
+    
     email_ids = messages[0].split()
-    print(f"DEBUG: Found {len(email_ids)} email IDs.")
+    log.info(f"Found {len(email_ids)} email IDs.")
     results = []
     
     for eid in email_ids:

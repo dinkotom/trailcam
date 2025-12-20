@@ -1,39 +1,42 @@
 import os
 import io
-from . import config, db, email_ops, utils, drive_ops
+import logging
+from src import config, db, email_ops, utils, drive_ops, logger
 
 def process_emails():
     """Main execution loop."""
+    # Ensure logging is setup if this is called directly or via runner
+    logger.setup_logging()
+    log = logging.getLogger("processor")
     
     # 1. Initialize
-    print("Initializing Database...")
+    log.info("Initializing Database...")
     db.init_db()
     
-    print("Connecting to Drive...")
+    log.info("Connecting to Drive...")
     try:
         drive_service = drive_ops.get_drive_service()
     except Exception as e:
-        print(f"Error connecting to Google Drive: {e}")
+        log.error(f"Error connecting to Google Drive: {e}")
         return
 
     # Check root target folder
     root_folder_id = config.Config.TARGET_DRIVE_FOLDER_ID
-    # If not set, we might default to root, but let's assume root if None
     
-    print("Connecting to Email...")
+    log.info("Connecting to Email...")
     try:
         mail = email_ops.connect_imap()
     except Exception as e:
-        print(f"Error connecting to Email: {e}")
+        log.error(f"Error connecting to Email: {e}")
         return
 
     # 2. Fetch
-    print("Fetching recent emails...")
+    log.info("Fetching recent emails...")
     # Fetching recent emails
     days_back = config.Config.EMAIL_LOOKBACK_DAYS
-    print(f"Fetching last {days_back} days of emails...")
+    log.info(f"Fetching last {days_back} days of emails...")
     emails = email_ops.fetch_recent_emails(mail, days=days_back) 
-    print(f"Found {len(emails)} recent emails.")
+    log.info(f"Found {len(emails)} recent emails.")
 
     # 3. Process
     for eid, msg in emails:
@@ -42,7 +45,7 @@ def process_emails():
             message_id = f"NO_ID_{eid}"
             
         if db.is_processed(message_id):
-            print(f"Skipping {message_id} (Already processed)")
+            log.debug(f"Skipping {message_id} (Already processed)")
             continue
             
         # Parse info
@@ -52,12 +55,8 @@ def process_emails():
         location = utils.get_location_from_subject(subject)
         
         if location == "Neznámá lokace":
-            print(f"Skipping {message_id}: Subject '{subject}' makes no sense (Unknown Location).")
-            # We treat this as "processed" or just ignoring?
-            # If we ignore it, we might check it again next run.
-            # Efficiently: Mark as processed so we don't re-check it every time?
-            # User said "Otherwise it should be ignored". 
-            # I'll mark it processed to save IMAP bandwidth next time.
+            log.info(f"Skipping {message_id}: Subject '{subject}' makes no sense (Unknown Location).")
+            # Mark processed to avoid re-fetch
             db.mark_processed(message_id)
             continue
             
@@ -93,12 +92,12 @@ def process_emails():
                     with open(temp_path, 'wb') as f:
                         f.write(part.get_payload(decode=True))
                     
-                    print(f"Uploading {new_filename} to Drive folder {service_day}...")
+                    log.info(f"Uploading {new_filename} to Drive folder {service_day}...")
                     drive_ops.upload_file(drive_service, temp_path, new_filename, day_folder_id)
                     os.remove(temp_path)
-                    print("Upload success.")
+                    log.info("Upload success.")
                 except Exception as e:
-                    print(f"Error handling attachment {filename}: {e}")
+                    log.error(f"Error handling attachment {filename}: {e}")
                     all_uploads_successful = False
         
         # Mark as processed only if:
@@ -108,9 +107,9 @@ def process_emails():
             if all_uploads_successful:
                 db.mark_processed(message_id)
             else:
-                print(f"Skipping DB mark for {message_id} due to upload failure.")
+                log.warning(f"Skipping DB mark for {message_id} due to upload failure.")
         else:
-            print(f"No attachment in {message_id}, marking processed.")
+            log.info(f"No attachment in {message_id}, marking processed.")
             db.mark_processed(message_id)
 
-    print("Processing complete.")
+    log.info("Processing complete.")

@@ -1,6 +1,6 @@
 import sqlite3
 import datetime
-from .config import Config
+from src.config import Config
 
 def get_connection():
     return sqlite3.connect(Config.DB_PATH)
