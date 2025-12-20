@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Google Drive / Cloud Auth Secrets
+service_account.json
+credentials.json
+token.json
+client_secrets.json
+
+# Local Data & DB
+data/
+*.db
+*.log
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
