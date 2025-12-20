@@ -10,7 +10,7 @@ from google.auth.transport.requests import Request
 from src.config import Config
 
 # Scopes
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def get_drive_service():
     """Authenticates and returns the Drive service."""
