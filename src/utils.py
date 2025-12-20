@@ -1,9 +1,13 @@
 import datetime
-import pytz
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    # Fallback for older python (shouldn't happen on 3.10+)
+    from backports.zoneinfo import ZoneInfo
 import re
 
 # Timezone definition
-CET = pytz.timezone('Europe/Prague')
+CET = ZoneInfo('Europe/Prague')
 
 def get_location_from_subject(subject):
     """
@@ -43,8 +47,8 @@ def get_service_date(dt_obj):
         str: Date string in 'YYYY-MM-DD' format.
     """
     if dt_obj.tzinfo is None:
-        # If naive, assume UTC for safety, though email parsing usually handles this.
-        dt_obj = pytz.utc.localize(dt_obj)
+        # If naive, assume UTC for safety
+        dt_obj = dt_obj.replace(tzinfo=datetime.timezone.utc)
         
     # Convert to Target Timezone (Prague)
     dt_cet = dt_obj.astimezone(CET)
