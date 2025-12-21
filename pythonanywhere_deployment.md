@@ -65,6 +65,18 @@ python src/main.py
 
 4.  Click **Create**.
 
+## 6. Automate with "Always-on" Task
+If your account supports "Always-on" tasks (or you just want a long-running script), use `src/always_on_runner.py`.
+
+1.  Go to the **Tasks** tab.
+2.  Scroll down to **Always-on tasks**.
+3.  **Command to run**:
+    ```bash
+    /home/dinkotom/.virtualenvs/trailcam-env/bin/python /home/dinkotom/trailcam/src/always_on_runner.py
+    ```
+4.  Click **Create**.
+5.  This script runs forever and checks for emails every 5 minutes. If it crashes, PythonAnywhere restarts it automatically.
+
 
 ## Troubleshooting
 -   **Token Expiry**: If your Google Cloud project is in "Testing" status, the `token.json` will expire in 7 days. You will need to re-run `auth_drive.py` **locally** on your computer to generate a new `token.json`, and then upload it to PythonAnywhere again. To avoid this, push your Google Cloud OAuth app to "Production" (verification not required for personal use).
