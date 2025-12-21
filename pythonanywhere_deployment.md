@@ -19,7 +19,7 @@ Because we used `.gitignore`, your secrets are **NOT** on GitHub. You must have 
     ```
 4.  **Create a Virtual Environment**:
     ```bash
-    mkvirtualenv --python=/usr/bin/python3.10 trailcam-env
+    mkvirtualenv --python=/usr/bin/python3.12 trailcam-env
     ```
     *(Note: The prompt should change to `(trailcam-env) $`)*
 
@@ -52,35 +52,18 @@ python src/main.py
 -   If it fails (e.g., *ModuleNotFoundError*), ensure you are in the `trailcam` folder and the virtualenv is active.
 
 ## 5. Automate with Scheduled Tasks
-Since your account allows only **hourly** tasks but you want **5-minute intervals**, we use a special runner script.
-
 1.  Go to the **Tasks** tab in PythonAnywhere.
 2.  Create a **Scheduled Task** to run **Hourly** (e.g., at 0 minutes past the hour).
 3.  **Command to run**:
-    Use the `hourly_runner.py` script. It runs for 55 minutes, checking every 5 minutes, then exits so the next hourly task can start.
+    Use the main script directly.
 
     ```bash
-    /home/dinkotom/.virtualenvs/trailcam-env/bin/python /home/dinkotom/trailcam/src/hourly_runner.py
+    /home/dinkotom/.virtualenvs/trailcam-env/bin/python /home/dinkotom/trailcam/src/main.py
     ```
 
-    *Replace `dinkotom` with your actual username.*
-
-
-## 6. Automate with "Always-on" Task (Paid Accounts)
-If you have a paid PythonAnywhere account (Hacker plan or higher), this is the **best** method.
-
-1.  Go to the **Tasks** tab.
-2.  Scroll down to **Always-on tasks**.
-3.  **Command to run**:
-    Use the `always_on_runner.py` script. It runs forever, checking every 5 minutes.
-
-    ```bash
-    /home/dinkotom/.virtualenvs/trailcam-env/bin/python /home/dinkotom/trailcam/src/always_on_runner.py
-    ```
+    *(Replace `dinkotom` with your username if widely different)*
 
 4.  Click **Create**.
-5.  If it stops (e.g. server restart), PythonAnywhere will restart it automatically.
-
 
 
 ## Troubleshooting
