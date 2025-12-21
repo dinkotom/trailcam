@@ -18,7 +18,7 @@ def get_drive_service():
     log = logging.getLogger("drive_ops")
     
     # 1. Try OAuth2 User Token (Preferred)
-    token_path = 'token.json'  # or Config.OAUTH_TOKEN_FILE
+    token_path = Config.GOOGLE_TOKEN_FILE
     if os.path.exists(token_path):
         try:
             creds = Credentials.from_authorized_user_file(token_path, SCOPES)
@@ -31,7 +31,7 @@ def get_drive_service():
             
     # 2. Fallback to Service Account (if no token)
     if not creds:
-        sa_path = getattr(Config, 'GOOGLE_SERVICE_ACCOUNT_FILE', 'service_account.json')
+        sa_path = Config.GOOGLE_SA_FILE
         if os.path.exists(sa_path):
             log.info("Using Service Account credentials.")
             creds = service_account.Credentials.from_service_account_file(
