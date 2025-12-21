@@ -78,6 +78,12 @@ def get_service_date(dt_obj):
         
     return service_date.strftime("%Y-%m-%d")
 
+
+def generate_filename(service_date_str, location, original_dt):
+    """
+    Generates filename: YYYY-MM-DD_HH-MM-SS_Location.ext
+    Note: Extension is handled by the saver function usually.
+    """
     # User requested REAL date and time for chronological sorting.
     # Service Date is only for Folder organization.
     
