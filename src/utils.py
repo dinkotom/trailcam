@@ -78,21 +78,10 @@ def get_service_date(dt_obj):
         
     return service_date.strftime("%Y-%m-%d")
 
-def generate_filename(service_date_str, location, original_dt):
-    """
-    Generates filename: YYYY-MM-DD_Location_HH-MM-SS.ext
-    Note: Extension is handled by the saver function usually, 
-    but we return the Base name here.
-    """
-    # Safe location string (remove spaces, special chars for filesystem safety/Drive safety)
-    # User asked for: "YYYY-MM-DD and then location"
-    # I added timestamp to prevent overwrites.
+    # User requested REAL date and time for chronological sorting.
+    # Service Date is only for Folder organization.
     
-    # Normalize location for filename (Optional but good practice)
-    # keeping it simple: 'Nová' -> 'Nova' might be safer but user used accents in JS.
-    # Python 3 handles utf-8 fine.
+    # Format: YYYY-MM-DD_HH-MM-SS_Location
+    timestamp_str = original_dt.astimezone(CET).strftime("%Y-%m-%d_%H-%M-%S")
     
-    # Format time for uniqueness
-    time_str = original_dt.astimezone(CET).strftime("%H-%M-%S")
-    
-    return f"{service_date_str}_{location}_{time_str}"
+    return f"{timestamp_str}_{location}"
