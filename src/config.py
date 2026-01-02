@@ -13,6 +13,8 @@ class Config:
     EMAIL_USER = os.getenv('EMAIL_USER')
     EMAIL_PASS = os.getenv('EMAIL_PASS')
     IMAP_SERVER = os.getenv('IMAP_SERVER', 'imap.seznam.cz')
+    SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.seznam.cz')
+    ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'tomas.dinkov@gmail.com')
     
     # Google Drive Auth
     GOOGLE_SA_FILE = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE', os.path.join(BASE_DIR, 'service_account.json'))

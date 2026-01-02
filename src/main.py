@@ -18,7 +18,13 @@ def main():
     try:
         processor.process_emails()
     except Exception as e:
-        log.critical(f"Unhandled exception: {e}", exc_info=True)
+        log.critical(f"Critical execution error: {e}", exc_info=True)
+        # Attempt to send alert email
+        try:
+            from src import email_ops
+            email_ops.send_alert_email("Execution Failed", f"The trailcam processor crashed.\n\nError:\n{str(e)}")
+        except Exception as mail_e:
+            log.critical(f"Failed to send alert email: {mail_e}")
         
     log.info("Done.")
 

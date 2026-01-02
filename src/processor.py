@@ -14,21 +14,15 @@ def process_emails():
     db.init_db()
     
     log.info("Connecting to Drive...")
-    try:
-        drive_service = drive_ops.get_drive_service()
-    except Exception as e:
-        log.error(f"Error connecting to Google Drive: {e}")
-        return
+    log.info("Connecting to Drive...")
+    # Raise exception to trigger notification in main.py
+    drive_service = drive_ops.get_drive_service()
 
     # Check root target folder
     root_folder_id = config.Config.TARGET_DRIVE_FOLDER_ID
     
     log.info("Connecting to Email...")
-    try:
-        mail = email_ops.connect_imap()
-    except Exception as e:
-        log.error(f"Error connecting to Email: {e}")
-        return
+    mail = email_ops.connect_imap()
 
     # 2. Fetch
     log.info("Fetching recent emails...")

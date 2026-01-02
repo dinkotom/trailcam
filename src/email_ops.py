@@ -1,7 +1,10 @@
 import imaplib
+import smtplib
 import email
 import logging
 from email.header import decode_header
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import datetime
 from src.config import Config
 
@@ -68,3 +71,24 @@ def get_email_date(msg):
             datetime.timezone.utc if date_tuple[-1] is None else datetime.timezone(datetime.timedelta(seconds=date_tuple[-1]))
         )
     return datetime.datetime.now()
+
+def send_alert_email(subject, body):
+    """Sends an alert email to the admin."""
+    log = logging.getLogger("email_ops")
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = Config.EMAIL_USER
+        msg['To'] = Config.ADMIN_EMAIL
+        msg['Subject'] = f"[Trailcam Alert] {subject}"
+
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Connect to SMTP (SSL)
+        server = smtplib.SMTP_SSL(Config.SMTP_SERVER, 465)
+        server.login(Config.EMAIL_USER, Config.EMAIL_PASS)
+        server.send_message(msg)
+        server.quit()
+        
+        log.info(f"Alert email sent to {Config.ADMIN_EMAIL}")
+    except Exception as e:
+        log.error(f"Failed to send alert email: {e}")
