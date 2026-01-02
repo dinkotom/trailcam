@@ -3,9 +3,12 @@
 This application automatically fetches trail camera photos from emails, renames them with a clear "Service Day" structure (handling the 15:00 CET rollover), and uploads them to Google Drive.
 
 ## Features
-- **Smart Date Logic**: Emails before 15:00 CET count towards the *previous* day.
+## Features
+- **Smart Date Logic**: Emails before 12:00 (Noon) count towards the *previous* day.
 - **Location Mapping**: Auto-detects location from Subject (e.g. "NOVA" -> "Nová").
-- **Google Drive Upload**: Organizes photos into folders `YYYY-MM-DD` on Drive.
+- **Organized Storage**: 
+  - Drive Folder Structure: `YYYY-MM-DD` / `{Location}` / `Photo.jpg`
+  - Filename Format: `YYYY-MM-DD HH:MM {Location}.jpg` (Preserves original timestamp)
 - **Efficient Tracking**: Maintains a lightweight history to avoid re-downloading today's photos.
 - **Cleanup**: Auto-removes tracking history older than 60 days.
 - **Comprehensive Logging**: Detailed logs to Console and `data/trailcam.log` (rotating).
@@ -54,5 +57,6 @@ See the dedicated guide: [PythonAnywhere Deployment](pythonanywhere_deployment.m
    - The code uses absolute paths (`src/config.py`) to find credentials even when run from Scheduled Tasks.
 
 ## Verification Results
-- **Date Logic**: Verified that 14:00 CET maps to the *previous* day and 15:00 CET maps to the *current* day.
+## Verification Results
+- **Date Logic**: Verified that 11:59 CET maps to the *previous* day and 12:00 CET maps to the *current* day.
 - **Database**: Verified that the app remembers processed emails during the session but discards very old history (2+ days) to keep the DB small.
