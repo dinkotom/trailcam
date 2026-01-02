@@ -56,24 +56,13 @@ def get_service_date(dt_obj):
     # Extract timestamp hour
     hour = dt_cet.hour
     
-    # Logic: Day starts at 15:00. 
-    # Example: 19th 14:00 -> Belongs to 18th (Wait, "Day starts at 15:00")
-    # Clarification from user: "day starts at 15:00 CET and ends 14:59 CET"
-    # So: 
-    # 2023-12-19 14:59 -> Part of 18th's shift? 
-    # 2023-12-19 15:00 -> Start of 19th's shift?
-    # Usually "Service Day X" covers 15:00 Day X to 14:59 Day X+1? 
-    # OR "Service Day X" covers 15:00 Day X-1 to 14:59 Day X?
+    # Logic: Day starts at 12:00 (noon). 
     
-    # Let's assume standard logic: 
-    # If today is 19th 16:00, that is "Day 19".
-    # If today is 19th 10:00, that is "Day 18" (night shift).
-    
-    if hour < 15:
-        # Before 15:00, it belongs to the previous calendar day's logical "shift"
+    if hour < 12:
+        # Before 12:00, it belongs to the previous calendar day's logical "shift"
         service_date = dt_cet.date() - datetime.timedelta(days=1)
     else:
-        # 15:00 or later, it is the start of today's logical "shift"
+        # 12:00 or later, it is the start of today's logical "shift"
         service_date = dt_cet.date()
         
     return service_date.strftime("%Y-%m-%d")
@@ -81,13 +70,13 @@ def get_service_date(dt_obj):
 
 def generate_filename(service_date_str, location, original_dt):
     """
-    Generates filename: YYYY-MM-DD_HH-MM-SS_Location.ext
+    Generates filename: YYYY-MM-DD HH:MM Location.ext
     Note: Extension is handled by the saver function usually.
     """
-    # User requested REAL date and time for chronological sorting.
-    # Service Date is only for Folder organization.
+    # User requested REAL date and time for filename.
     
-    # Format: YYYY-MM-DD_HH-MM-SS_Location
-    timestamp_str = original_dt.astimezone(CET).strftime("%Y-%m-%d_%H-%M-%S")
+    # Format: YYYY-MM-DD HH:MM {Location}
+    # Note: Using spaces in filenames might be tricky for some systems, but it was requested.
+    timestamp_str = original_dt.astimezone(CET).strftime("%Y-%m-%d %H:%M")
     
-    return f"{timestamp_str}_{location}"
+    return f"{timestamp_str} {location}"

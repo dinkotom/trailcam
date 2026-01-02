@@ -65,6 +65,9 @@ def process_emails():
         # Prepare Target Folder on Drive
         day_folder_id = drive_ops.ensure_folder(drive_service, service_day, parent_id=root_folder_id)
         
+        # Ensure Location Subfolder
+        location_folder_id = drive_ops.ensure_folder(drive_service, location, parent_id=day_folder_id)
+        
         # Extract Attachments
         all_uploads_successful = True
         found_any_attachment = False
@@ -92,8 +95,8 @@ def process_emails():
                     with open(temp_path, 'wb') as f:
                         f.write(part.get_payload(decode=True))
                     
-                    log.info(f"Uploading {new_filename} to Drive folder {service_day}...")
-                    drive_ops.upload_file(drive_service, temp_path, new_filename, day_folder_id)
+                    log.info(f"Uploading {new_filename} to Drive folder {service_day}/{location}...")
+                    drive_ops.upload_file(drive_service, temp_path, new_filename, location_folder_id)
                     os.remove(temp_path)
                     log.info("Upload success.")
                 except Exception as e:
