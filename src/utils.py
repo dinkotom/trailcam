@@ -25,7 +25,7 @@ def get_location_from_subject(subject):
         return "Nová"
     elif "CHECHLUVKA" in subject_upper:
         return "Chechlůvka"
-    elif "TOS3" in subject_upper:
+    elif "RAKOSI" in subject_upper:
         return "Rákosí"
     elif "DUB" in subject_upper:
         return "Dub"
