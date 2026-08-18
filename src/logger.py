@@ -24,8 +24,9 @@ def setup_logging():
     log_format = logging.Formatter('%(asctime)s [%(levelname)s] [%(name)s] %(message)s')
     
     # Root logger
+    level = getattr(logging, Config.LOG_LEVEL, logging.INFO)
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
+    root_logger.setLevel(level)
     
     # Clear existing handlers to avoid duplicates on re-import/re-run
     if root_logger.handlers:
@@ -45,4 +46,7 @@ def setup_logging():
     # Example debug logging control
     # logging.getLogger("googleapiclient.discovery").setLevel(logging.WARNING) # Noise reduction
     
-    logging.info(f"Logging initialized. Writing to: {log_file}")
+    # Noise reduction: the Google client logs every discovery/HTTP detail at INFO
+    logging.getLogger("googleapiclient.discovery_cache").setLevel(logging.ERROR)
+
+    logging.info(f"Logging initialized ({Config.LOG_LEVEL}). Writing to: {log_file}")

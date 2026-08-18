@@ -19,6 +19,8 @@ class Config:
     # Google Drive Auth
     GOOGLE_SA_FILE = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE', os.path.join(BASE_DIR, 'service_account.json'))
     GOOGLE_TOKEN_FILE = os.getenv('GOOGLE_TOKEN_FILE', os.path.join(BASE_DIR, 'token.json'))
+    # Contents of token.json passed as an env var (used by CI, where no files are uploaded)
+    GOOGLE_TOKEN_JSON = os.getenv('GOOGLE_TOKEN_JSON')
     
     # Target Root Folder ID (optional, if you want to enforce a root)
     TARGET_DRIVE_FOLDER_ID = os.getenv('TARGET_DRIVE_FOLDER_ID')
@@ -30,3 +32,11 @@ class Config:
             
     # How many days back to look for emails
     EMAIL_LOOKBACK_DAYS = int(os.getenv('EMAIL_LOOKBACK_DAYS', 2))
+
+    # Where the processed-Message-ID history lives: 'sqlite' (local data/processed.db)
+    # or 'drive' (JSON file in TARGET_DRIVE_FOLDER_ID, for ephemeral runners like CI)
+    STATE_BACKEND = os.getenv('STATE_BACKEND', 'sqlite').lower()
+
+    # Console/file log level. Runs on a public repo keep this at INFO or higher;
+    # DEBUG also prints email subjects.
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()

@@ -37,9 +37,9 @@ class TestTrailcamDB(unittest.TestCase):
             )
         ''')
         
-        # Insert 1 recent, 1 old (3 days ago)
+        # Insert 1 recent, 1 old (61 days ago; retention is 60 days)
         recent_date = datetime.datetime.now()
-        old_date = datetime.datetime.now() - datetime.timedelta(days=3)
+        old_date = datetime.datetime.now() - datetime.timedelta(days=61)
         
         c.execute("INSERT INTO processed_emails (message_id, processed_at) VALUES (?, ?)", 
                   ("msg_recent", recent_date))

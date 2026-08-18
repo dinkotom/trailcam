@@ -1,3 +1,4 @@
+import json
 import os
 import io
 import logging
@@ -16,12 +17,28 @@ def get_drive_service():
     """Authenticates and returns the Drive service."""
     creds = None
     log = logging.getLogger("drive_ops")
-    
-    # 1. Try OAuth2 User Token (Preferred)
-    token_path = Config.GOOGLE_TOKEN_FILE
-    if os.path.exists(token_path):
+
+    # Scopes are not passed for user credentials on purpose: the token is reused
+    # with the scopes it was issued for, otherwise Google returns invalid_scope
+    # on refresh.
+
+    # 1. Try OAuth2 user token from the environment (ephemeral runners, e.g. CI)
+    if Config.GOOGLE_TOKEN_JSON:
         try:
-            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+            creds = Credentials.from_authorized_user_info(
+                json.loads(Config.GOOGLE_TOKEN_JSON))
+            if creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            log.info("Using OAuth2 token from GOOGLE_TOKEN_JSON.")
+        except Exception as e:
+            log.warning(f"Error loading GOOGLE_TOKEN_JSON: {e}")
+            creds = None
+
+    # 2. Try OAuth2 user token file (local runs)
+    token_path = Config.GOOGLE_TOKEN_FILE
+    if not creds and os.path.exists(token_path):
+        try:
+            creds = Credentials.from_authorized_user_file(token_path)
             # Refresh if expired
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
@@ -29,7 +46,7 @@ def get_drive_service():
             log.warning(f"Error loading token.json: {e}")
             creds = None
             
-    # 2. Fallback to Service Account (if no token)
+    # 3. Fallback to Service Account (if no token)
     if not creds:
         sa_path = Config.GOOGLE_SA_FILE
         if os.path.exists(sa_path):
