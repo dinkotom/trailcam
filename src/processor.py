@@ -1,3 +1,4 @@
+import hashlib
 import os
 import io
 import logging
@@ -41,7 +42,10 @@ def _process_inbox(log, mail, drive_service, root_folder_id, state):
     headers = email_ops.fetch_recent_headers(mail, days=days_back)
 
     uploaded_count = 0
+    skipped_count = 0
     new_count = 0
+    # md5 of the photos already in each Drive folder, fetched once per folder
+    folder_checksums = {}
 
     # 3. Process
     for eid, header in headers:
@@ -80,6 +84,11 @@ def _process_inbox(log, mail, drive_service, root_folder_id, state):
         # Ensure Location Subfolder
         location_folder_id = drive_ops.ensure_folder(drive_service, location, parent_id=day_folder_id)
 
+        if location_folder_id not in folder_checksums:
+            folder_checksums[location_folder_id] = drive_ops.list_folder_checksums(
+                drive_service, location_folder_id)
+        known_checksums = folder_checksums[location_folder_id]
+
         # Extract Attachments
         all_uploads_successful = True
         found_any_attachment = False
@@ -112,12 +121,26 @@ def _process_inbox(log, mail, drive_service, root_folder_id, state):
 
                 # Write to temp
                 try:
+                    payload = part.get_payload(decode=True)
+
+                    # Idempotency guard: the same photo may already be on Drive from
+                    # an earlier run whose history we no longer have.
+                    checksum = hashlib.md5(payload).hexdigest()
+                    if checksum in known_checksums:
+                        log.info(
+                            f"Already on Drive as '{known_checksums[checksum]}' "
+                            f"in {service_day}/{location}, skipping upload."
+                        )
+                        skipped_count += 1
+                        continue
+
                     with open(temp_path, 'wb') as f:
-                        f.write(part.get_payload(decode=True))
+                        f.write(payload)
 
                     log.info(f"Uploading {new_filename} to {service_day}/{location}...")
                     drive_ops.upload_file(drive_service, temp_path, new_filename, location_folder_id)
                     os.remove(temp_path)
+                    known_checksums[checksum] = new_filename
                     uploaded_count += 1
                     log.info("Upload success.")
                 except Exception as e:
@@ -139,4 +162,7 @@ def _process_inbox(log, mail, drive_service, root_folder_id, state):
         # Persist after every message, so a crash mid-run cannot cause re-uploads
         state.flush()
 
-    log.info(f"Processing complete. New messages: {new_count}, photos uploaded: {uploaded_count}.")
+    log.info(
+        f"Processing complete. New messages: {new_count}, photos uploaded: "
+        f"{uploaded_count}, already on Drive: {skipped_count}."
+    )

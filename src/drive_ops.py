@@ -89,6 +89,31 @@ def ensure_folder(service, folder_name, parent_id=None):
         folder = service.files().create(body=file_metadata, fields='id').execute()
         return folder.get('id')
 
+def list_folder_checksums(service, folder_id):
+    """
+    Returns {md5Checksum: name} for the files already in a folder.
+
+    Used to make uploads idempotent: the same photo is never uploaded twice, even
+    if the processed-message history is empty (new host, lost or pruned state).
+    """
+    checksums = {}
+    page_token = None
+    while True:
+        response = service.files().list(
+            q=f"'{folder_id}' in parents and trashed=false",
+            spaces='drive',
+            fields='nextPageToken, files(name, md5Checksum)',
+            pageSize=1000,
+            pageToken=page_token,
+        ).execute()
+        for f in response.get('files', []):
+            if f.get('md5Checksum'):
+                checksums[f['md5Checksum']] = f['name']
+        page_token = response.get('nextPageToken')
+        if not page_token:
+            return checksums
+
+
 def upload_file(service, file_path, file_name, folder_id):
     """Uploads a file to specific folder."""
     log = logging.getLogger("drive_ops")

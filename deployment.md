@@ -23,6 +23,13 @@ Entries older than 60 days are pruned on every run, and the file is written afte
 processed message, so a crash mid-run cannot cause re-uploads. Because the state sits
 next to the photos, the pipeline can be moved to another host without losing history.
 
+The history is a shortcut, not the safety net: before uploading, the md5 of the photo is
+compared against the files already in the target Drive folder, and a photo that is already
+there is skipped. So an empty or lost history costs some IMAP traffic on the next run, but
+never produces duplicates. This was learned the hard way during the migration — the first
+run started with an empty history and re-uploaded 273 photos that PythonAnywhere had already
+delivered (they were removed afterwards).
+
 Locally nothing changes: `STATE_BACKEND` defaults to `sqlite` (`data/processed.db`).
 
 ## 2. Repository secrets
